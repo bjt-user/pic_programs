@@ -1,10 +1,8 @@
 /*
  * File:   main.c
- * Author: BF
  * IDE: MPLAB X IDE v5.40
  * Compiler: XC8
- * Description: this program lights up leds on PORTA and counts from 0 to 255 in binary numbers
- * Created on September 28, 2020, 5:26 PM
+ * Description: this program lights up all 8 connected leds on PORTA and counts from 0 to 255 in binary numbers
  */
 // PIC16F886 Configuration Bit Settings
 
@@ -31,8 +29,9 @@
 
 #include <xc.h>
 
-//pic16f886 has 20MHz (xtal freq means crystal frequency)
-#define _XTAL_FREQ 20000000L
+//pic16f886 runs at 4MHz in the default state ("xtal freq" means crystal frequency)
+//4 million don't fit in an integer, so you have to put an "L" at the end to make it a long
+#define _XTAL_FREQ 4000000L
 
 void main(void) {
     TRISA = 0x00;
