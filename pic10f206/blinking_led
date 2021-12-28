@@ -1,0 +1,76 @@
+; File: main.S
+    ; Target: PIC10F206
+    ; Assembler: pic-as(v2.20)
+    ; IDE: MPLAB X IDE v.5.40
+    ;
+    ;project properties -> PICkit 4 -> Program Options -> PGC configuration: pullup AND PGD configuration: pullup
+    ;(otherwise LED will light up no matter what you do)
+    ;project properites -> PICkit 4 -> Power -> set checkbox "power target circuit from PICkit 4"AND voltage level: 5V
+    ;
+    ;the file extension must be .S for preprocessing the file (which is probably needed for the #include <xc.inc>
+    ;you can't add .S source files from the menu, so you have to rename the file to .S (outside the IDE in a file explorer)
+    ;(you also have to restart the IDE to see the renaming effect)
+    
+    ; Depends on files:
+    ;   <InstallPathVaries>\xc8\v2.20\pic\include\xc.inc
+    ;   <InstallPathVaries>\xc8\v2.20\pic\include\pic.inc
+    ;   <InstallPathVaries>\xc8\v2.20\pic\include\pic_as_chip_select.inc
+    ;   <InstallPathVaries>\xc8\v2.20\pic\include\proc\pic10f206.inc
+    ;
+    ; Description:
+    ; Trying to get a LED to blink.
+    
+    PROCESSOR   10F206
+    PAGEWIDTH   132
+    RADIX       dec
+    
+    ; Include target specific definitions for special function registers
+    ;
+    #include <xc.inc>
+    ;
+    ; Set the configuration word
+    ;
+    config MCLRE = OFF, CP = OFF, WDTE = OFF
+     
+Start:
+    movlw 11000000B
+    option		;to turn off T0CKI
+
+    movlw 00000000B  ;center frequency and turn fosc4 off
+    movwf 05h	     ;to turn off FOSC4 from GPI2
+    ;osccal register is at 05h
+
+    movlw 01110001B	 ;bit 3 to 0 for turning comparator off
+    movwf 07h
+    ;cmcon0 is at 07h
+
+    movlw 11111101B	 ;set GP1 to output direction
+    tris 6
+	
+Loop:
+    bsf 06h, 1
+    ;gpio is at 06h ;GP1 is bit 1 (could also try 01h)
+    call Delay
+    bcf 06h, 1 ;turn LED off again
+    call Delay
+    goto Loop ;loop forever
+	
+Delay:
+    movlw 100 ;put the decimal number 100 into w
+    movwf 0Ah
+    ;register 0Ah should be a general purpose register that I can use
+    ;to put in values
+    movwf 0Bh
+    ;put 100 in 0Bh as well
+Delay_Loop:
+    DECFSZ 0Ah, 1
+    ;decrement the register and store the result in itself
+    ;and skip the next instruction if the result was zero
+    goto Delay_Loop
+    
+    DECFSZ 0Bh, 1
+    ;the same with the second register that I filled
+    goto Delay_Loop
+    retlw 0
+
+end Start
